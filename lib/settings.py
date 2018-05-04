@@ -83,7 +83,7 @@ def get_string_log_level(ip, spec, strict):
         return 1
     if blacklists <= strict:
         info(output_string)
-        return -1
+        return 2
     elif strict <= blacklists <= 4:
         error(output_string)
         return 0

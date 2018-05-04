@@ -4,7 +4,8 @@ from lib.formatter import (
    info,
    warn,
    prompt,
-   debug
+   debug,
+   error
 )
 from lib.settings import (
     parse_settings,
@@ -12,6 +13,7 @@ from lib.settings import (
     get_string_log_level,
     generate_ip_ranges,
     write_to_file,
+    send_command,
     CONF_FILE_PATH,
     BLACKLIST_CHECK_LINK,
     IP_DENIER_LOG_FILE_PATH
@@ -57,20 +59,31 @@ def main():
             say = False
         statuses.append(send_request(BLACKLIST_CHECK_LINK, ip))
     for status in statuses:
-        _status = get_string_log_level(status[0], status[1], int(configured_settings["strict"]))
-        if _status == 0:
-            question = prompt(
-                "this IP addresses blacklist count is at a medium interval, do you want to add it to the ban queue"
-            )
-            if question.lower().startswith("y"):
+        if status[1] is not None:
+            _status = get_string_log_level(status[0], status[1], int(configured_settings["strict"]))
+            if _status == 0:
+                question = prompt(
+                    "this IP addresses blacklist count is at a medium interval, do you want to add it to the ban queue"
+                )
+                if question.lower().startswith("y"):
+                    ban_hammer.append(status[0])
+            elif _status == 1:
                 ban_hammer.append(status[0])
+            else:
+                if verbose:
+                    debug("skipping IP address {} due to blacklist stricting".format(status[0]))
         else:
-            ban_hammer.append(status[0])
+            warn("IP address {} cannot be searched (private IP address?)".format(status[0]))
     if verbose:
         debug("all IP's in the deny queue: {}".format(ban_hammer))
         write_to_file(
             ban_hammer, IP_DENIER_LOG_FILE_PATH, "DEBUG"
         )
-    write_to_file("total of {} in ddeny queue".format(len(ban_hammer)), IP_DENIER_LOG_FILE_PATH)
+    write_to_file("total of {} in deny queue".format(len(ban_hammer)), IP_DENIER_LOG_FILE_PATH)
     warn("about to deny a total of {} IP addresses".format(len(ban_hammer)))
+    for ip in ban_hammer:
+        try:
+            send_command(configured_settings["firewall_cmd_command"], ip)
+        except Exception as e:
+            error("error: {}".format(str(e)))
 

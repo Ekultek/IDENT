@@ -1,7 +1,9 @@
 import re
 import os
 import time
+import shlex
 import datetime
+import subprocess
 try:
     import ConfigParser
 except ImportError:
@@ -15,7 +17,7 @@ from lib.formatter import (
 
 
 CONF_FILE_PATH = "{}/IDENT.conf".format(os.getcwd())
-IP_DENIER_LOG_FILE_PATH = "{}/.ip_denier_log/{}-IDENT-log.log".format(
+IP_DENIER_LOG_FILE_PATH = "{}/.ip_denier_log/{}-ident-log.log".format(
     os.path.expanduser("~"), datetime.datetime.today().strftime("%Y%m%d")
 )
 IP_FINDER = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
@@ -88,5 +90,15 @@ def get_string_log_level(ip, spec, strict):
     else:
         fatal(output_string)
         return 1
+
+
+def send_command(command, ip_address_to_block, sep="-" * 30):
+    command = command.format(ip_address_to_block)
+    command_list = shlex.split(command)
+    write_to_file("calling command", IP_DENIER_LOG_FILE_PATH)
+    print(sep)
+    with subprocess.Popen(command_list) as proc:
+        print(proc.stdout.read())
+    print(sep)
 
 

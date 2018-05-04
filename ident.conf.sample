@@ -1,0 +1,49 @@
+#
+# The program settings for the ip_denier app
+#
+
+[settings]
+
+#
+# add your firewall log file here
+# IE macOS /var/log/appfirewall.log
+#
+logfile=/var/log/appfirewall.log
+
+#
+# add the filters that you want to filter out here
+# these will be added to your network range so you can filter out
+# all the possible `good` ip addresses, kinda like a whitelist
+# filters are required, you should add any IP address that could
+# connect to your network
+#
+filters=166.78.12.56,166.98.76.54,98.76.57.43
+
+#
+# what is the max number of blacklists you want the IP address to be apart of
+#
+strict=5
+
+#
+# this is your network ip range which will be used to generate a list of
+# ip addresses on your network so that we do not deny them access
+# IE: 10.0.1.1,10.0.1.255
+#
+network_ip_range=10.0.1.1,10.0.1.255
+
+#
+# the terminal command for your firewall to deny an IP address
+# IE: iptables -A INPUT -s {} -j DROP
+#
+firewall_cmd_command=iptables -A INPUT -s {} -j DROP
+
+[log settings]
+
+#
+# this is the logging aspect of the program. changing this
+# will change the way the program logs the information to the
+# output file, levels are as follow:
+# -level:info - basic information
+# -level:debug- ALL information
+#
+log_level=level:debug

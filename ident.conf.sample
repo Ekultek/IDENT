@@ -36,14 +36,3 @@ network_ip_range=10.0.1.1,10.0.1.255
 # IE: iptables -A INPUT -s {} -j DROP
 #
 firewall_cmd_command=iptables -A INPUT -s {} -j DROP
-
-[log settings]
-
-#
-# this is the logging aspect of the program. changing this
-# will change the way the program logs the information to the
-# output file, levels are as follow:
-# -level:info - basic information
-# -level:debug- ALL information
-#
-log_level=level:debug

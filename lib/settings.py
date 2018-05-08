@@ -11,6 +11,7 @@ except ImportError:
 
 from lib.formatter import (
     info,
+    warn,
     error,
     fatal
 )
@@ -22,6 +23,7 @@ IP_DENIER_LOG_FILE_PATH = "{}/.ip_denier_log/{}-ident-log.log".format(
 )
 IP_FINDER = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
 BLACKLIST_CHECK_LINK = "http://www.ipvoid.com/ip-blacklist-check/"
+IP_ADDRESS_LOG_FILE_PATH = "{}/.ident".format(os.path.expanduser("~"))
 
 
 def parse_settings(conf_file_path):
@@ -31,13 +33,22 @@ def parse_settings(conf_file_path):
     sections = parser.sections()
     for section in sections:
         for opt in parser.options(section):
-            opts[opt] = parser.get(section, opt)
+            current_option = parser.get(section, opt)
+            if not current_option == "":
+                opts[opt] = parser.get(section, opt)
     try:
         opts["filters"] = opts["filters"].split(",")
         opts["network_ip_range"] = opts["network_ip_range"].split(",")
+    except KeyError:
+        opts["filters"] = None
     except:
         opts["filters"] = list(opts["filters"])
-        opts["network_ip_range"] = list(opts["network_ip_range"])
+        opts["network_ip_range"] = None
+
+    if len(opts.values()) != 5:
+        fatal("you have not configured any settings")
+        exit(-1)
+    print opts
     return opts
 
 

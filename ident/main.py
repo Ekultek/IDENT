@@ -1,3 +1,5 @@
+import datetime
+
 from searcher import send_request
 from lib.core import CoreEngine
 from lib.cmd import IdentParser
@@ -17,7 +19,8 @@ from lib.settings import (
     send_command,
     CONF_FILE_PATH,
     BLACKLIST_CHECK_LINK,
-    IP_DENIER_LOG_FILE_PATH
+    IP_DENIER_LOG_FILE_PATH,
+    IP_ADDRESS_LOG_FILE_PATH
 )
 
 
@@ -25,6 +28,11 @@ def main():
     ban_hammer = []
     statuses = []
     opt = IdentParser().optparse()
+    if opt.sendToTextFile:
+        ip_log_filepath = "{}/{}".format(
+            IP_ADDRESS_LOG_FILE_PATH, datetime.datetime.today().strftime("intruders-%H%M%S") + ".txt"
+        )
+        info("will save found IP addresses to {}".format(ip_log_filepath))
     configured_settings = parse_settings(CONF_FILE_PATH)
     if opt.verbose:
         debug("setting log level to debug")
@@ -48,7 +56,7 @@ def main():
     write_to_file("total of {} matches".format(len(found_matches)), IP_DENIER_LOG_FILE_PATH)
     intruders = engine.parse_matches(found_matches)
     total = len(intruders)
-    if opt.erbose:
+    if opt.verbose:
         debug("intruder list: {}".format(intruders))
         write_to_file(intruders, IP_DENIER_LOG_FILE_PATH, "DEBUG")
     write_to_file("total of {} intruders", IP_DENIER_LOG_FILE_PATH)
@@ -85,6 +93,8 @@ def main():
     write_to_file("total of {} in deny queue".format(len(ban_hammer)), IP_DENIER_LOG_FILE_PATH)
     warn("about to deny a total of {} IP addresses".format(len(ban_hammer)))
     for ip in ban_hammer:
+        if opt.sendToTextFile:
+            write_to_file(ip, ip_log_filepath, level=None)
         try:
             send_command(configured_settings["firewall_cmd_command"], ip)
         except Exception as e:

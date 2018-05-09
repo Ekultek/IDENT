@@ -11,7 +11,6 @@ except ImportError:
 
 from lib.formatter import (
     info,
-    warn,
     error,
     fatal
 )
@@ -48,7 +47,6 @@ def parse_settings(conf_file_path):
     if len(opts.values()) != 5:
         fatal("you have not configured any settings")
         exit(-1)
-    print opts
     return opts
 
 
@@ -59,10 +57,13 @@ def write_to_file(data, logfile_path, level="INFO"):
     if not os.path.exists(directory_to_check):
         os.mkdir(directory_to_check)
     with open(logfile_path, "a+") as log:
-        log.write("[{} {}] {}{}".format(
-            time.strftime("%H:%M:%S"), level,
-            data, os.linesep
-        ))
+        if level is not None:
+            log.write("[{} {}] {}{}".format(
+                time.strftime("%H:%M:%S"), level,
+                data, os.linesep
+            ))
+        else:
+            log.write(data + "\n")
     return logfile_path
 
 
